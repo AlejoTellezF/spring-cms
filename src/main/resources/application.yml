@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres-spring5
+    username: postgres
+    password: cms@springfive
+    diver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    generate-ddl: true
