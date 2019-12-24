@@ -1,20 +1,25 @@
 package springfive.cms.domain.models;
 
+import lombok.Builder;
 import lombok.Data;
-import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import java.util.UUID;
+
 
 @Data
-@Entity
-@Table(name = "category")
+@Document(collation = "categories")
 public class Category{
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid2")
     String id;
     String name;
+
+    @Builder
+    public static Category newCategory(String name){
+        final Category category = new Category();
+        category.setId(UUID.randomUUID().toString());
+        category.setName(name);
+        return category;
+    }
 }
