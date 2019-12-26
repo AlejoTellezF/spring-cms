@@ -1,6 +1,8 @@
 package springfive.cms.domain.service;
 
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import springfive.cms.domain.exceptions.UserNotFoundException;
 import springfive.cms.domain.models.User;
 import springfive.cms.domain.repository.UserRepository;
@@ -19,20 +21,15 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User findOne(String id){
-        final Optional<User> optionalUser = userRepository.findById(id);
-        if(optionalUser.isPresent()){
-            return optionalUser.get();
-        }else{
-            throw new UserNotFoundException(id);
-        }
+    public Mono<User> findOne(String id){
+        return this.userRepository.findById(id);
     }
 
-    public Iterable<User> findAll(){
+    public Flux<User> findAll(){
         return this.userRepository.findAll();
     }
 
-    public User create(UserRequest userRequest){
+    public Mono<User> create(UserRequest userRequest){
         User user = new User();
         user.setId(UUID.randomUUID().toString());
         user.setIdentity(userRequest.getIdentity());
@@ -41,22 +38,16 @@ public class UserService {
         return this.userRepository.save(user);
     }
 
-    public User update(String id, UserRequest userRequest){
-        final Optional<User> optionalUser = this.userRepository.findById(id);
-        if(optionalUser.isPresent()){
-            final User user = optionalUser.get();
-            user.setIdentity(userRequest.getIdentity());
-            user.setName(userRequest.getName());
-            user.setRole(userRequest.getRole());
-            return this.userRepository.save(user);
-        }
-        else{
-            throw new UserNotFoundException(id);
-        }
+    public Mono<User> update(String id, UserRequest userRequest){
+        return this.userRepository.findById(id).flatMap(userDatabase -> {
+            userDatabase.setIdentity(userRequest.getIdentity());
+            userDatabase.setName(userRequest.getName());
+            userDatabase.setRole(userRequest.getRole());
+            return this.userRepository.save(userDatabase);
+        });
     }
 
     public void delete(String id){
-        final Optional<User> optionalUser = this.userRepository.findById(id);
-        optionalUser.ifPresent(this.userRepository::delete);
+        this.userRepository.deleteById(id);
     }
 }

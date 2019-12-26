@@ -34,8 +34,6 @@ public class News {
     }
 
     public Boolean revised(){
-        return this.mandatoryReviewers.stream().allMatch(reviewer ->
-                this.reviewers.stream().anyMatch(review ->
-                        id.equals(review.userId) && "approved".equals(review.status)));
+        return this.mandatoryReviewers.stream().allMatch(reviewer -> this.reviewers.stream().anyMatch(review -> reviewer.id.equals(review.userId) && "approved".equals(review.status)));
     }
 }

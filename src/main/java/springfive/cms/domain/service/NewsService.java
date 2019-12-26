@@ -1,13 +1,13 @@
 package springfive.cms.domain.service;
 
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import springfive.cms.domain.exceptions.NewsNotFoundException;
 import springfive.cms.domain.models.*;
 import springfive.cms.domain.repository.NewsRepository;
 import springfive.cms.domain.vo.NewsRequest;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -19,19 +19,15 @@ public class NewsService {
         this.newsRepository = newsRepository;
     }
 
-    public News findOne(String id){
-        final Optional<News> optionalNews = this.newsRepository.findById(id);
-        if(optionalNews.isPresent())
-            return optionalNews.get();
-        else
-            throw new NewsNotFoundException(id);
+    public Mono<News> findOne(String id){
+        return this.newsRepository.findById(id);
     }
 
-    public List<News> findAll(){
+    public Flux<News> findAll(){
         return this.newsRepository.findAll();
     }
 
-    public News create(NewsRequest request){
+    public Mono<News> create(NewsRequest request){
         News news = new News();
         news.setId(UUID.randomUUID().toString());
         news.setTitle(request.getTitle());
@@ -44,26 +40,18 @@ public class NewsService {
         return this.newsRepository.save(news);
     }
 
-    public News update(String id, NewsRequest request){
-        final Optional<News> optionalNews = this.newsRepository.findById(id);
-        if(optionalNews.isPresent()) {
-            News news = optionalNews.get();
-            news.setTitle(request.getTitle());
-            news.setContent(request.getContent());
-            news.setCategories(request.getCategories());
-            news.setTags(request.getTags());
-            //author?
-            //mandatoryReviewers?
-            //reviewers?
-            return this.newsRepository.save(news);
-        }else{
-            throw new NewsNotFoundException(id);
-        }
+    public Mono<News> update(String id, NewsRequest request){
+        return this.newsRepository.findById(id).flatMap(newsDatabase ->{
+            newsDatabase.setTitle(request.getTitle());
+            newsDatabase.setContent(request.getContent());
+            newsDatabase.setCategories(request.getCategories());
+            newsDatabase.setTags(request.getTags());
+            return this.newsRepository.save(newsDatabase);
+        });
     }
 
     public void delete(String id){
-        final Optional<News> optionalNews = this.newsRepository.findById(id);
-        optionalNews.ifPresent(this.newsRepository::delete);
+        this.newsRepository.deleteById(id);
     }
 
 
